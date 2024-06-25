@@ -9,7 +9,9 @@ private:
     std::string roomType;
     double pricePerNight;
     bool isAvailable;
-    std::string occupantName;
+    std::string customerName;
+    std::string checkInDate;
+    std::string checkOutDate;
 
 public:
     Room(int number, std::string type, double price, bool available, std::string occupant);
@@ -22,11 +24,11 @@ public:
 
     bool getIsAvailable() const;
 
-    std::string getOccupantName() const;
+    std::string getCustomerName() const;
 
-    void setOccupantName(const std::string &occupant);
+    void bookRoom(std::string name, std::string from, std::string to);
 
-    void setIsAvailable(bool available);
+    void releaseRoom();
 };
 
 #endif //HOTEL_MANAGEMENT_SYSTEM_ROOM_H

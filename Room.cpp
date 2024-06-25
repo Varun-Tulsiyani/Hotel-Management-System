@@ -19,14 +19,20 @@ bool Room::getIsAvailable() const {
     return isAvailable;
 }
 
-std::string Room::getOccupantName() const {
-    return occupantName;
+std::string Room::getCustomerName() const {
+    return customerName;
 }
 
-void Room::setOccupantName(const std::string& occupant) {
-    occupantName = occupant;
+void Room::bookRoom(std::string name, std::string from, std::string to) {
+    this->customerName = name;
+    this->checkInDate = from;
+    this->checkOutDate = to;
+    this->isAvailable = false;
 }
 
-void Room::setIsAvailable(bool available) {
-    isAvailable = available;
+void Room::releaseRoom() {
+    this->customerName = "";
+    this->checkInDate = "";
+    this->checkOutDate = "";
+    this->isAvailable = true;
 }
