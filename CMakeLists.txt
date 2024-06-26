@@ -8,10 +8,8 @@ add_executable(untitled1
         Room.cpp
         Room.h
         BillingSystem.cpp
-        Hotel.cpp
-        Hotel.h
+        BillingSystem.h
         ReservationSystem.cpp
         ReservationSystem.h
-        CancelReservation.cpp
-        
+        tests.cpp
 )

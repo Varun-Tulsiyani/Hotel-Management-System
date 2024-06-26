@@ -1,27 +1,28 @@
-#include "Hotel.h"
+#include <vector>
+#include "Room.h"
 
 class ReservationSystem {
-private:
-    Hotel *hotel;
-
 public:
-    ReservationSystem(Hotel *h) : hotel(h) {}
+    ReservationSystem();
 
     static void initializeSystem();
 
     void displayHotelDescription();
 
-    void checkIn();
+    virtual void checkIn(
+            Room &room, const std::string &name,
+            const std::string &checkInDate, const std::string &checkOutDate
+    );
 
-    void checkOut();
+    virtual void checkOut(Room &room);
+
+    void cancelReservation();
 
     std::pair<std::vector<Room>, std::vector<Room>> getRooms();
 
     void viewBillingSystem();
 
+    void displayBookings() const;
+
     static void saveCurrentStatus();
-
-    // Other features
-
-    // Other features
 };

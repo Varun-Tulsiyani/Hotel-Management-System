@@ -1,9 +1,9 @@
 #include <iostream>
 #include <thread>
 #include <chrono>
+#include <ctime>
 #include "Room.h"
 #include "ReservationSystem.h"
-#include "Hotel.h"
 
 void displayMenu() {
     std::cout << "1. Check-in Customer" << std::endl;
@@ -15,22 +15,58 @@ void displayMenu() {
 }
 
 int main() {
-    Hotel hotel;
-    ReservationSystem system(&hotel);
+    ReservationSystem system;
+    system.initializeSystem();
+
+    system.displayHotelDescription();
+
     auto [bookedRoomsList, availableRoomsList] = system.getRooms();
-    int choice;
+    int choice, roomNumber;
+    std::string customerName, checkInDate, checkOutDate;
+    time_t curr_time = time(nullptr);
+    char *tm = ctime(&curr_time);
+
     do {
         displayMenu();
         std::cout << "Enter your choice: ";
         std::cin >> choice;
 
+        std::cout << "Room Number: ";
+        std::cin >> roomNumber;
+
         switch (choice) {
-            case 1:
-                system.checkIn();
-                break;
-            case 2:
-                system.checkOut();
-                break;
+            case 1: {
+                std::cout << "Enter customer name: ";
+                std::cin >> customerName;
+                std::cout << "Enter check-in date: ";
+                std::cin >> checkInDate;
+                std::cout << "Enter check-out date: ";
+                std::cin >> checkOutDate;
+                for (auto &room: availableRoomsList) {
+                    if (room.getRoomNumber() == roomNumber) {
+                        system.checkIn(room, customerName, checkInDate, checkOutDate);
+                        bookedRoomsList.push_back(room);
+                        availableRoomsList.erase(
+                                std::remove(availableRoomsList.begin(), availableRoomsList.end(), room),
+                                availableRoomsList.end()
+                        );
+                        return 0;
+                    }
+                }
+                throw std::runtime_error("Room number not found.");
+            }
+            case 2: {
+                for (auto &room: bookedRoomsList) {
+                    if (room.getRoomNumber() == roomNumber) {
+                        system.checkOut(room);
+                        availableRoomsList.push_back(room);
+                        bookedRoomsList.erase(std::remove(bookedRoomsList.begin(), bookedRoomsList.end(), room),
+                                              bookedRoomsList.end());
+                        return 0;
+                    }
+                }
+                throw std::runtime_error("Room number not found.");
+            }
             case 3:
                 for (const Room &availableRoom: availableRoomsList) {
                     std::cout << availableRoom.getRoomNumber() << std::endl;

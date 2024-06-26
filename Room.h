@@ -2,6 +2,7 @@
 #define HOTEL_MANAGEMENT_SYSTEM_ROOM_H
 
 #include <string>
+#include <iostream>
 
 class Room {
 private:
@@ -26,9 +27,44 @@ public:
 
     std::string getCustomerName() const;
 
-    void bookRoom(std::string name, std::string from, std::string to);
+    std::string getCheckInDate() const;
 
-    void releaseRoom();
+    std::string getCheckOutDate() const;
+
+    virtual void bookRoom(std::string name, std::string from, std::string to);
+
+    virtual void releaseRoom();
 };
 
 #endif //HOTEL_MANAGEMENT_SYSTEM_ROOM_H
+
+class SingleRoom : public Room {
+public:
+    SingleRoom(int num) : Room(num) {}
+
+    void checkIn(const std::string &checkInDate) override {
+        std::cout << "Checking into Single Room..." << std::endl;
+        Room::bookRoom(checkInDate);
+    }
+
+    void checkOut() override {
+        std::cout << "Checking out from Single Room..." << std::endl;
+        Room::releaseRoom();
+    }
+};
+
+
+class DoubleRoom : public Room {
+public:
+    DoubleRoom(int num) : Room(num) {}
+
+    void checkIn(const std::string &checkInDate) override {
+        std::cout << "Checking into Double Room..." << std::endl;
+        Room::bookRoom(checkInDate);
+    }
+
+    void checkOut() override {
+        std::cout << "Checking out from Double Room..." << std::endl;
+        Room::releaseRoom();
+    }
+};
