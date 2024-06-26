@@ -12,4 +12,6 @@ add_executable(untitled1
         Hotel.h
         ReservationSystem.cpp
         ReservationSystem.h
+        CancelReservation.cpp
+        CancelReservation.h
 )
