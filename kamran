@@ -1,1 +1,165 @@
+#include <iostream>
+#include <vector>
+#include <string>
+#include <stdexcept>
+#include <ctime>
 
+using namespace std;
+
+
+class Room {
+protected:
+    int roomNumber;
+    bool isBooked;
+    string checkInDateTime;
+    string checkOutDateTime;
+public:
+    Room(int num) : roomNumber(num), isBooked(false), checkInDateTime(""), checkOutDateTime("") {}
+
+    virtual void checkIn(const string& checkInDate) {
+        if (isBooked) {
+            throw runtime_error("Room already booked.");
+        }
+        isBooked = true;
+        checkInDateTime = checkInDate;
+        cout << "Checked in to room " << roomNumber << " on " << checkInDateTime << endl;
+    }
+
+    virtual void checkOut(const string& checkOutDate) {
+        if (!isBooked) {
+            throw runtime_error("Room is not booked.");
+        }
+        isBooked = false;
+        checkOutDateTime = checkOutDate;
+        cout << "Checked out from room " << roomNumber << " on " << checkOutDateTime << endl;
+    }
+
+    bool getIsBooked() const {
+        return isBooked;
+    }
+
+    int getRoomNumber() const {
+        return roomNumber;
+    }
+
+    string getCheckInDateTime() const {
+        return checkInDateTime;
+    }
+
+    string getCheckOutDateTime() const {
+        return checkOutDateTime;
+    }
+};
+
+
+class SingleRoom : public Room {
+public:
+    SingleRoom(int num) : Room(num) {}
+
+    void checkIn(const string& checkInDate) override {
+        cout << "Checking into Single Room..." << endl;
+        Room::checkIn(checkInDate);
+    }
+
+    void checkOut(const string& checkOutDate) override {
+        cout << "Checking out from Single Room..." << endl;
+        Room::checkOut(checkOutDate);
+    }
+};
+
+
+class DoubleRoom : public Room {
+public:
+    DoubleRoom(int num) : Room(num) {}
+
+    void checkIn(const string& checkInDate) override {
+        cout << "Checking into Double Room..." << endl;
+        Room::checkIn(checkInDate);
+    }
+
+    void checkOut(const string& checkOutDate) override {
+        cout << "Checking out from Double Room..." << endl;
+        Room::checkOut(checkOutDate);
+    }
+};
+
+
+class Hotel {
+private:
+    vector<Room*> rooms;
+
+public:
+    Hotel() {}
+
+    void addRoom(Room* room) {
+        rooms.push_back(room);
+    }
+
+    void displayBookings() const {
+        cout << "Current bookings:" << endl;
+        for (const auto& room : rooms) {
+            cout << "Room " << room->getRoomNumber() << ": " 
+                 << (room->getIsBooked() ? "Booked" : "Available");
+            if (room->getIsBooked()) {
+                cout << " (Checked in: " << room->getCheckInDateTime() << ")";
+            } else if (!room->getCheckOutDateTime().empty()) {
+                cout << " (Last checked out: " << room->getCheckOutDateTime() << ")";
+            }
+            cout << endl;
+        }
+    }
+
+    void checkIn(int roomNumber, const string& checkInDate) {
+        for (auto& room : rooms) {
+            if (room->getRoomNumber() == roomNumber) {
+                room->checkIn(checkInDate);
+                return;
+            }
+        }
+        throw runtime_error("Room number not found.");
+    }
+
+    void checkOut(int roomNumber, const string& checkOutDate) {
+        for (auto& room : rooms) {
+            if (room->getRoomNumber() == roomNumber) {
+                room->checkOut(checkOutDate);
+                return;
+            }
+        }
+        throw runtime_error("Room number not found.");
+    }
+};
+
+int main() {
+    try {
+        Hotel hotel;
+
+       
+        hotel.addRoom(new SingleRoom(101));
+        hotel.addRoom(new SingleRoom(102));
+        hotel.addRoom(new DoubleRoom(201));
+        hotel.addRoom(new DoubleRoom(202));
+
+        
+        hotel.displayBookings();
+
+        
+        hotel.checkIn(101, getCurrentDateTime());
+        hotel.checkIn(201, getCurrentDateTime());
+
+        
+        hotel.displayBookings();
+
+        
+        hotel.checkOut(101, getCurrentDateTime());
+        hotel.checkOut(201, getCurrentDateTime());
+
+        
+        hotel.displayBookings();
+
+    } catch (const exception& e) {
+        cerr << "Error: " << e.what() << endl;
+    }
+
+    return 0;
+}
