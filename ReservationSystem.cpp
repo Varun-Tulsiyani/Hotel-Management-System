@@ -1,8 +1,8 @@
 #include "ReservationSystem.h"
+#include "BillingSystem.h"
 #include <iostream>
 #include <fstream>
 #include <sstream>
-#include <iomanip>
 
 ReservationSystem::ReservationSystem() = default;
 
@@ -28,11 +28,6 @@ void ReservationSystem::displayHotelDescription() {
 
     std::cout << "Hotel Name: " << hotelName << std::endl;
     std::cout << "Hotel Location: " << hotelLocation << std::endl;
-    std::cout << "Rooms Information:" << std::endl;
-    for (auto &room: rooms) {
-        std::cout << "Room " << room.getRoomNumber() << ": " << room.getRoomType() << " at $" << std::fixed
-                  << std::setprecision(2) << room.getPricePerNight() << " per night" << std::endl;
-    }
 }
 
 void ReservationSystem::checkIn(
@@ -56,8 +51,8 @@ void ReservationSystem::checkOut(Room &room) {
 }
 
 void ReservationSystem::cancelReservation() {
-    auto rooms = getRooms();
-    auto &bookedRooms = rooms.first;
+    auto [bookedRoomsList, availableRoomsList] = getRooms();
+    auto &bookedRooms = bookedRoomsList;
 
     if (bookedRooms.empty()) {
         std::cout << "No booked rooms to cancel." << std::endl;
@@ -81,9 +76,8 @@ void ReservationSystem::cancelReservation() {
         }
     }
 
-
     std::ofstream outFile("../room.txt");
-    for (const auto &room: rooms.first) {
+    for (const auto &room: bookedRoomsList) {
         outFile << room.getRoomNumber() << ',' << room.getRoomType() << ',' << room.getPricePerNight() << ','
                 << room.getIsAvailable() << ',' << room.getCustomerName() << ',' << room.getCheckInDate() << ','
                 << room.getCheckOutDate() << '\n';
@@ -131,15 +125,16 @@ std::pair<std::vector<Room>, std::vector<Room>> ReservationSystem::getRooms() {
     return {bookedRoomsList, availableRoomsList};
 }
 
-void ReservationSystem::displayBookings() const {
+void ReservationSystem::displayBookings() {
     std::cout << "Current bookings:" << std::endl;
-    for (const auto &room: rooms) {
-        std::cout << "Room " << room->getRoomNumber() << ": "
-                  << (room->getIsBooked() ? "Booked" : "Available");
-        if (room->getIsBooked()) {
-            std::cout << " (Checked in: " << room->getCheckInDateTime() << ")";
-        } else if (!room->getCheckOutDateTime().empty()) {
-            std::cout << " (Last checked out: " << room->getCheckOutDateTime() << ")";
+    auto [bookedRoomsList, availableRoomsList] = getRooms();
+    for (const auto &room: bookedRoomsList) {
+        std::cout << "Room " << room.getRoomNumber() << ": "
+                  << (room.getIsAvailable() ? "Booked" : "Available");
+        if (room.getIsAvailable()) {
+            std::cout << " (Checked in: " << room.getCheckInDate() << ")";
+        } else if (!room.getCheckOutDate().empty()) {
+            std::cout << " (Last checked out: " << room.getCheckOutDate() << ")";
         }
         std::cout << std::endl;
     }
@@ -147,11 +142,34 @@ void ReservationSystem::displayBookings() const {
 
 void ReservationSystem::viewBillingSystem() {}
 
-void ReservationSystem::saveCurrentStatus() {
-    std::ofstream outFile("../database.txt");
-
-    if (!outFile) {
-        std::cerr << "Error opening file!" << std::endl;
+void ReservationSystem::saveCurrentStatus(
+        const BillingSystem &billingSystem,
+        const std::string &filename
+) {
+    std::ofstream file(filename);
+    if (!file.is_open()) {
+        std::cerr << "Failed to open file for saving state: " << filename << std::endl;
         return;
     }
+
+    // Serialize rooms
+    file << "Rooms:\n";
+
+    auto [bookedRoomsList, availableRoomsList] = getRooms();
+    std::vector<Room> rooms;
+    rooms.reserve(bookedRoomsList.size() + availableRoomsList.size());
+
+    std::string result;
+    for (const auto &room: rooms) {
+        result += room.serialize() + "\n";
+    }
+
+    file << result;
+
+    // Serialize bills
+    file << "\nBills:\n";
+    file << billingSystem.serialize();
+
+    file.close();
+    std::cout << "Current state saved to " << filename << std::endl;
 }

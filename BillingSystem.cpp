@@ -20,3 +20,11 @@ double BillingSystem::calculateAmount(int roomNumber, int daysStayed) {
     const double ratePerDay = 100.0;
     return ratePerDay * daysStayed;
 }
+
+std::string BillingSystem::serialize() const {
+    std::string result;
+    for (const auto& bill : bills) {
+        result += bill.guestName + "," + std::to_string(bill.roomNumber) + "," + std::to_string(bill.daysStayed) + "," + std::to_string(bill.amount) + "\n";
+    }
+    return result;
+}

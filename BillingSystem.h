@@ -22,6 +22,8 @@ public:
     void generateBill(const std::string &guestName, int roomNumber, int daysStayed);
 
     void displayBills() const;
+
+    std::string serialize() const;
 };
 
 #endif // HOTEL_MANAGEMENT_SYSTEM_BILLINGSYSTEM_H

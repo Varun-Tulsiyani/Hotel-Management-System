@@ -11,5 +11,4 @@ add_executable(untitled1
         BillingSystem.h
         ReservationSystem.cpp
         ReservationSystem.h
-        tests.cpp
 )
