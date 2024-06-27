@@ -1,6 +1,6 @@
 #include <iostream>
-#include <thread>
-#include <chrono>
+#include <iomanip>
+#include <sstream>
 #include <ctime>
 #include "Room.h"
 #include "ReservationSystem.h"
@@ -30,11 +30,15 @@ string getCurrentDate() {
 }
 
 int main() {
+    ReservationSystem system;
+
     ReservationSystem::initializeSystem();
+
+    // Load existing state from file
+    system.loadFromFile("../system_state.txt");
 
     ReservationSystem::displayHotelDescription();
 
-    auto [bookedRoomsList, availableRoomsList] = ReservationSystem::getRooms();
     int choice, roomNumber;
     string guestName, date = getCurrentDate();
 
@@ -51,47 +55,27 @@ int main() {
                 cout << "Enter guest name: ";
                 cin >> guestName;
 
-                for (auto room = availableRoomsList.begin(); room != availableRoomsList.end(); ++room) {
-                    if (room->getRoomNumber() == roomNumber) {
-                        ReservationSystem::checkIn(*room, guestName, date);
-                        bookedRoomsList.push_back(*room);
-                        availableRoomsList.erase(room);
-
-                        break;
-                    }
-                }
+                system.checkIn(roomNumber, guestName, date);
             }
                 break;
             case 2: {
                 cout << "Room Number: ";
                 cin >> roomNumber;
 
-                for (auto room = bookedRoomsList.begin(); room != bookedRoomsList.end(); ++room) {
-                    if (room->getRoomNumber() == roomNumber) {
-                        ReservationSystem::checkOut(*room, date);
-                        availableRoomsList.push_back(*room);
-                        bookedRoomsList.erase(room);
-
-                        break;
-                    }
-                }
+                ReservationSystem::checkOut(roomNumber, date);
             }
                 break;
             case 3:
                 ReservationSystem::cancelReservation(date);
                 break;
             case 4:
-                for (Room availableRoom: availableRoomsList) {
-                    cout << availableRoom.displayRoom() << endl;
-                }
+                ReservationSystem::displayAvailableRooms();
                 break;
             case 5:
-                for (Room bookedRoom: bookedRoomsList) {
-                    cout << bookedRoom.displayRoom() << endl;
-                }
+                ReservationSystem::displayBookedRooms();
                 break;
             case 6:
-                ReservationSystem::viewBillingSystem();
+                system.displayBills();
                 break;
             case 7:
                 cout << "Exiting..." << endl;
@@ -101,8 +85,7 @@ int main() {
                 break;
         }
 
-        BillingSystem billingSystem;
-        ReservationSystem::saveCurrentStatus(billingSystem, "../database.txt");
+        system.saveCurrentStatus("../system_state.txt");
     } while (choice != 7);
 
     return 0;

@@ -26,16 +26,21 @@ public:
 };
 
 class BillingSystem {
-public:
+private:
     vector<Bill> bills;
 
-    static double calculateAmount(const Room& room, int daysStayed);
+    double calculateAmount(const Room &room, int daysStayed);
 
-    void generateBill(const Room& room, int daysStayed);
+public:
+    void generateBill(const Room &room, int daysStayed);
 
     void displayBills() const;
 
     string serialize() const;
+
+    void clearBills() { bills.clear(); }
+
+    void addBill(const Bill &bill) { bills.push_back(bill); }
 };
 
 #endif // HOTEL_MANAGEMENT_SYSTEM_BILLINGSYSTEM_H

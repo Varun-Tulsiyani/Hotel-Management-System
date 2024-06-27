@@ -13,8 +13,6 @@ private:
     double pricePerNight;
     bool isAvailable;
     string guestName;
-    string checkInDate;
-    string checkOutDate;
 
 public:
     Room();
@@ -37,15 +35,11 @@ public:
 
     void setGuestName(string guestName);
 
-    string getCheckInDate() const;
-
-    string getCheckOutDate() const;
-
     void bookRoom(const string &name, const string &from);
 
     void releaseRoom(const string &to);
 
-    string displayRoom();
+    string displayRoom() const;
 
     string serialize() const;
 };

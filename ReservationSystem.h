@@ -1,44 +1,39 @@
-#include <vector>
+#ifndef HOTEL_MANAGEMENT_SYSTEM_RESERVATIONSYSTEM_H
+#define HOTEL_MANAGEMENT_SYSTEM_RESERVATIONSYSTEM_H
+
 #include "Room.h"
 #include "BillingSystem.h"
+#include <vector>
+#include <string>
+
+using namespace std;
 
 class ReservationSystem {
 private:
-    static vector<Room> bookedRoomsList;
-    static vector<Room> availableRoomsList;
     static vector<Room> rooms;
-    vector<Bill> bills;
+    BillingSystem billingSystem;
 public:
-    ReservationSystem();
-
     static void initializeSystem();
 
     static void displayHotelDescription();
 
-    static void checkIn(Room &room, const string &name, const string &checkInDate);
+    static vector<Room> getRooms();
 
-    static void checkOut(Room &room, const string &checkOutDate);
+    void checkIn(int roomNumber, const string &guestName, const string &checkInDate);
+
+    static void checkOut(int roomNumber, const string &checkOutDate);
 
     static void cancelReservation(const string &date);
 
-    static pair<vector<Room>, vector<Room>> getRooms();
+    static void displayAvailableRooms() ;
 
-    static void viewBillingSystem();
+    static void displayBookedRooms() ;
 
-    static void displayBookings();
+    void displayBills() const;
 
-    static void saveCurrentStatus(
-            const BillingSystem &billingSystem,
-            const string &filename
-    );
+    void saveCurrentStatus(const string &filename) const;
 
-    static void updateRoomsFile();
-
-    static void readDatabase();
-
-    void writeDatabase();
-
-    void updateRoomStatus(int roomNumber, bool isAvailable, const string &guestName = "");
-
-    void addBill(const Bill &bill);
+    void loadFromFile(const string &filename);
 };
+
+#endif // HOTEL_MANAGEMENT_SYSTEM_RESERVATIONSYSTEM_H
