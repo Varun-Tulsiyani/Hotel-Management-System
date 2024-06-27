@@ -4,18 +4,25 @@
 #include <fstream>
 #include <sstream>
 
+using namespace std;
+
+vector<Room> ReservationSystem::bookedRoomsList;
+vector<Room> ReservationSystem::availableRoomsList;
+vector<Room> ReservationSystem::rooms;
+
+
 ReservationSystem::ReservationSystem() = default;
 
 void ReservationSystem::initializeSystem() {
-    std::ifstream inFile("../initialFile.txt");
+    ifstream inFile("../initialFile.txt");
 
     if (!inFile) {
-        std::cerr << "Error opening file!" << std::endl;
-//        return "";
+        cerr << "Error opening file!" << endl;
+        return;
     }
 
-    std::string data, line;
-    while (std::getline(inFile, line)) {
+    string data, line;
+    while (getline(inFile, line)) {
         data += line + "\n";
     }
 
@@ -23,153 +30,262 @@ void ReservationSystem::initializeSystem() {
 }
 
 void ReservationSystem::displayHotelDescription() {
-    std::string hotelName = "Hotel Name";
-    std::string hotelLocation = "Hotel Location";
+    string hotelName = "Hotel Name";
+    string hotelLocation = "Dubai, United Arab Emirates";
 
-    std::cout << "Hotel Name: " << hotelName << std::endl;
-    std::cout << "Hotel Location: " << hotelLocation << std::endl;
+    cout << "Hotel Name: " << hotelName << endl;
+    cout << "Hotel Location: " << hotelLocation << endl;
 }
 
-void ReservationSystem::checkIn(
-        Room &room, const std::string &name,
-        const std::string &checkInDate, const std::string &checkOutDate
-) {
-    if (!room.getIsAvailable()) {
-        throw std::runtime_error("Room already booked.");
-    }
-    room.bookRoom(name, checkInDate, checkOutDate);
-    std::cout << "Checked in to room " << room.getRoomNumber() << " from " << checkInDate << " to " << checkOutDate
-              << std::endl;
-}
+void ReservationSystem::updateRoomsFile() {
+    ofstream outFile("../room.txt", ios::trunc);
 
-void ReservationSystem::checkOut(Room &room) {
-    if (room.getIsAvailable()) {
-        throw std::runtime_error("Room is not booked.");
-    }
-    room.releaseRoom();
-    std::cout << "Checked out from room " << room.getRoomNumber() << std::endl;
-}
-
-void ReservationSystem::cancelReservation() {
-    auto [bookedRoomsList, availableRoomsList] = getRooms();
-    auto &bookedRooms = bookedRoomsList;
-
-    if (bookedRooms.empty()) {
-        std::cout << "No booked rooms to cancel." << std::endl;
+    if (!outFile) {
+        cerr << "Error opening room.txt for writing!" << endl;
         return;
     }
 
-    std::cout << "Booked Rooms:" << std::endl;
+    for (const auto &room: rooms) {
+        outFile << room.getRoomNumber() << "," << room.getRoomType() << ","
+                << room.getPricePerNight() << "," << (room.getIsAvailable() ? "Available" : "Occupied") << ","
+                << room.getGuestName() << "\n";
+    }
+
+    outFile.close();
+}
+
+void ReservationSystem::checkIn(Room &room, const string &name, const string &date) {
+    if (!room.getIsAvailable()) {
+        throw runtime_error("Room already booked.");
+    }
+    room.bookRoom(name, date);
+    cout << "Checked in to room " << room.getRoomNumber() << " from " << date << endl;
+
+    updateRoomsFile();
+}
+
+void ReservationSystem::checkOut(Room &room, const string &date) {
+    if (room.getIsAvailable()) {
+        throw runtime_error("Room is not booked.");
+    }
+    room.releaseRoom(date);
+    cout << "Checked out from room " << room.getRoomNumber() << " on " << date << endl;
+
+    updateRoomsFile();
+}
+
+void ReservationSystem::cancelReservation(const string &date) {
+    auto &bookedRooms = bookedRoomsList;
+
+    if (bookedRooms.empty()) {
+        cout << "No booked rooms to cancel." << endl;
+        return;
+    }
+
+    cout << "Booked Rooms:" << endl;
     for (const auto &room: bookedRooms) {
-        std::cout << "Room Number: " << room.getRoomNumber() << ", Type: " << room.getRoomType()
-                  << ", Customer Name: " << room.getCustomerName() << std::endl;
+        cout << "Room Number: " << room.getRoomNumber() << ", Type: " << room.getRoomType()
+                  << ", Guest Name: " << room.getGuestName() << endl;
     }
 
     int roomNumber;
-    std::cout << "Enter room number to cancel reservation: ";
-    std::cin >> roomNumber;
+    cout << "Enter room number to cancel reservation: ";
+    cin >> roomNumber;
 
     for (auto &room: bookedRooms) {
         if (room.getRoomNumber() == roomNumber) {
-            room.releaseRoom();
+            room.releaseRoom(date);
             break;
         }
     }
 
-    std::ofstream outFile("../room.txt");
+    ofstream outFile("../room.txt");
+
+    if (!outFile) {
+        cerr << "Error opening file" << endl;
+        return;
+    }
+
     for (const auto &room: bookedRoomsList) {
         outFile << room.getRoomNumber() << ',' << room.getRoomType() << ',' << room.getPricePerNight() << ','
-                << room.getIsAvailable() << ',' << room.getCustomerName() << ',' << room.getCheckInDate() << ','
-                << room.getCheckOutDate() << '\n';
+                << room.getIsAvailable() << ',' << room.getGuestName() << ',' << room.getCheckInDate() << ','
+                << room.getCheckOutDate() << endl;
     }
     outFile.close();
 
-    std::cout << "Reservation canceled successfully." << std::endl;
+    cout << "Reservation canceled successfully." << endl;
 }
 
-std::pair<std::vector<Room>, std::vector<Room>> ReservationSystem::getRooms() {
-    std::ifstream inFile("../room.txt");
+pair<vector<Room>, vector<Room>> ReservationSystem::getRooms() {
+    ifstream inFile("../room.txt");
 
     if (!inFile) {
-        std::cerr << "Error opening file!" << std::endl;
+        cerr << "Error opening file!" << endl;
         return {};
     }
 
-    std::string line;
-    std::vector<Room> bookedRoomsList;
-    std::vector<Room> availableRoomsList;
+    string line;
 
-    while (std::getline(inFile, line)) {
-        std::istringstream ss(line);
-        std::string token;
+    while (getline(inFile, line)) {
+        istringstream ss(line);
+        string token;
 
-        std::getline(ss, token, ',');
-        int roomNumber = std::stoi(token);
+        getline(ss, token, ',');
+        int roomNumber = stoi(token);
 
-        std::string roomType;
-        std::getline(ss, roomType, ',');
+        string roomType;
+        getline(ss, roomType, ',');
 
-        std::getline(ss, token, ',');
-        double pricePerNight = std::stod(token);
+        getline(ss, token, ',');
+        double pricePerNight = stod(token);
 
-        std::getline(ss, token, ',');
+        getline(ss, token, ',');
         bool isAvailable = (token == "true");
 
-        std::string occupantName;
-        std::getline(ss, occupantName, ',');
+        string guestName;
+        getline(ss, guestName, ',');
 
-        isAvailable ? availableRoomsList.emplace_back(roomNumber, roomType, pricePerNight, isAvailable, occupantName)
-                    : bookedRoomsList.emplace_back(roomNumber, roomType, pricePerNight, isAvailable, occupantName);
+        isAvailable ? availableRoomsList.emplace_back(roomNumber, roomType, pricePerNight, isAvailable, guestName)
+                    : bookedRoomsList.emplace_back(roomNumber, roomType, pricePerNight, isAvailable, guestName);
     }
 
     return {bookedRoomsList, availableRoomsList};
 }
 
 void ReservationSystem::displayBookings() {
-    std::cout << "Current bookings:" << std::endl;
-    auto [bookedRoomsList, availableRoomsList] = getRooms();
+    cout << "Current bookings:" << endl;
+
     for (const auto &room: bookedRoomsList) {
-        std::cout << "Room " << room.getRoomNumber() << ": "
+        cout << "Room " << room.getRoomNumber() << ": "
                   << (room.getIsAvailable() ? "Booked" : "Available");
         if (room.getIsAvailable()) {
-            std::cout << " (Checked in: " << room.getCheckInDate() << ")";
+            cout << " (Checked in: " << room.getCheckInDate() << ")";
         } else if (!room.getCheckOutDate().empty()) {
-            std::cout << " (Last checked out: " << room.getCheckOutDate() << ")";
+            cout << " (Last checked out: " << room.getCheckOutDate() << ")";
         }
-        std::cout << std::endl;
+        cout << endl;
     }
 }
 
 void ReservationSystem::viewBillingSystem() {}
 
+vector<string> split(const string &str, char delimiter) {
+    vector<string> tokens;
+    string token;
+    istringstream tokenStream(str);
+    while (getline(tokenStream, token, delimiter)) {
+        tokens.push_back(token);
+    }
+    return tokens;
+}
+
+void ReservationSystem::readDatabase() {
+    ifstream inFile("../database.txt");
+
+    if (!inFile) {
+        cerr << "Error opening file!" << endl;
+        return;
+    }
+
+    string line;
+    bool readingRooms = false;
+    bool readingBills = false;
+
+    while (getline(inFile, line)) {
+        if (line == "Rooms:") {
+            readingRooms = true;
+            readingBills = false;
+            continue;
+        } else if (line == "Bills:") {
+            readingRooms = false;
+            readingBills = true;
+            continue;
+        }
+
+        if (readingRooms) {
+            auto tokens = split(line, ',');
+            if (tokens.size() >= 4) {
+                int roomNumber = stoi(tokens[0]);
+                string roomType = tokens[1];
+                double price = stod(tokens[2]);
+                bool isAvailable = (tokens[3] == "true");
+                string guestName = tokens.size() > 4 ? tokens[4] : "";
+
+                rooms.emplace_back(roomNumber, roomType, price, isAvailable, guestName);
+            }
+        } else if (readingBills) {
+            // Implement bill reading if required
+        }
+    }
+}
+
+void ReservationSystem::writeDatabase() {
+    ofstream outFile("../database.txt");
+
+    if (!outFile) {
+        cerr << "Error opening file" << endl;
+        return;
+    }
+
+    outFile << "Rooms:\n";
+    for (const auto &room: rooms) {
+        outFile << room.getRoomNumber() << "," << room.getRoomType() << "," << room.getPricePerNight() << ","
+                << (room.getIsAvailable() ? "true" : "false");
+        if (!room.getIsAvailable()) {
+            outFile << "," << room.getGuestName();
+        }
+        outFile << "\n";
+    }
+
+    outFile << "Bills:\n";
+    for (const auto &bill: bills) {
+        // Implement bill writing if required
+    }
+}
+
+void ReservationSystem::updateRoomStatus(int roomNumber, bool isAvailable, const string &guestName) {
+    for (auto &room: rooms) {
+        if (room.getRoomNumber() == roomNumber) {
+            room.setAvailable(isAvailable);
+            room.setGuestName(guestName);
+            break;
+        }
+    }
+    writeDatabase();
+}
+
+void ReservationSystem::addBill(const Bill &bill) {
+    bills.push_back(bill);
+    writeDatabase();
+}
+
 void ReservationSystem::saveCurrentStatus(
         const BillingSystem &billingSystem,
-        const std::string &filename
+        const string &filename
 ) {
-    std::ofstream file(filename);
-    if (!file.is_open()) {
-        std::cerr << "Failed to open file for saving state: " << filename << std::endl;
+    ofstream outFile(filename);
+
+    if (!outFile) {
+        cerr << "Failed to open file for saving state: " << filename << endl;
         return;
     }
 
     // Serialize rooms
-    file << "Rooms:\n";
+    outFile << "Rooms:\n";
 
-    auto [bookedRoomsList, availableRoomsList] = getRooms();
-    std::vector<Room> rooms;
     rooms.reserve(bookedRoomsList.size() + availableRoomsList.size());
 
-    std::string result;
+    string result;
     for (const auto &room: rooms) {
         result += room.serialize() + "\n";
     }
 
-    file << result;
+    outFile << result;
 
     // Serialize bills
-    file << "\nBills:\n";
-    file << billingSystem.serialize();
+    outFile << "\nBills:\n";
+    outFile << billingSystem.serialize();
 
-    file.close();
-    std::cout << "Current state saved to " << filename << std::endl;
+    outFile.close();
+    cout << "Current state saved to " << filename << endl;
 }

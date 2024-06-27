@@ -1,30 +1,44 @@
 #include "BillingSystem.h"
 #include <iostream>
+#include <utility>
 
-void BillingSystem::generateBill(const std::string &guestName, int roomNumber, int daysStayed) {
-    double amount = calculateAmount(roomNumber, daysStayed);
-    Bill newBill = {guestName, roomNumber, daysStayed, amount};
+using namespace std;
+
+string Bill::getGuestName() const { return guestName; }
+
+int Bill::getRoomNumber() const { return roomNumber; }
+
+int Bill::getDaysStayed() const { return daysStayed; }
+
+double Bill::getAmount() const { return amount; }
+
+Bill::Bill(string guestName, int roomNumber, int daysStayed, double amount)
+        : guestName(move(guestName)), roomNumber(roomNumber), daysStayed(daysStayed), amount(amount) {}
+
+void BillingSystem::generateBill(const Room& room, int daysStayed) {
+    double amount = calculateAmount(room, daysStayed);
+    Bill newBill = {room.getGuestName(), room.getRoomNumber(), daysStayed, amount};
     bills.push_back(newBill);
-    std::cout << "Bill generated for " << guestName << " for room " << roomNumber << " for " << daysStayed
-              << " days. Amount: $" << amount << std::endl;
+    cout << "Bill generated for " << room.getGuestName() << " for room " << room.getRoomNumber() << " for " << daysStayed
+              << " days. Amount: $" << amount << endl;
 }
 
 void BillingSystem::displayBills() const {
     for (const Bill &bill: bills) {
-        std::cout << "Guest: " << bill.guestName << ", Room: " << bill.roomNumber << ", Days: " << bill.daysStayed
-                  << ", Amount: $" << bill.amount << std::endl;
+        cout << "Guest: " << bill.getGuestName() << ", Room: " << bill.getRoomNumber() << ", Days: "
+                  << bill.getDaysStayed() << ", Amount: $" << bill.getAmount() << endl;
     }
 }
 
-double BillingSystem::calculateAmount(int roomNumber, int daysStayed) {
-    const double ratePerDay = 100.0;
-    return ratePerDay * daysStayed;
+double BillingSystem::calculateAmount(const Room& room, int daysStayed) {
+    return room.getPricePerNight() * daysStayed;
 }
 
-std::string BillingSystem::serialize() const {
-    std::string result;
-    for (const auto& bill : bills) {
-        result += bill.guestName + "," + std::to_string(bill.roomNumber) + "," + std::to_string(bill.daysStayed) + "," + std::to_string(bill.amount) + "\n";
+string BillingSystem::serialize() const {
+    string result;
+    for (const auto &bill: bills) {
+        result += bill.getGuestName() + "," + to_string(bill.getRoomNumber()) + "," +
+                  to_string(bill.getDaysStayed()) + "," + to_string(bill.getAmount()) + "\n";
     }
     return result;
 }

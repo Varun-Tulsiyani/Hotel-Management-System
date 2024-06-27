@@ -1,20 +1,23 @@
 #include "Room.h"
-
 #include <utility>
 
-Room::Room(int number, std::string type, double price, bool available, std::string occupant)
-        : roomNumber(number), roomType(std::move(type)), pricePerNight(price), isAvailable(available),
-          customerName(std::move(occupant)) {}
+using namespace std;
+
+Room::Room() = default;
+
+Room::Room(int number, string type, double price, bool available, string guest)
+        : roomNumber(number), roomType(move(type)), pricePerNight(price), isAvailable(available),
+          guestName(move(guest)) {}
 
 Room::Room(const Room &room)
         : roomNumber(room.roomNumber), roomType(room.roomType), pricePerNight(room.pricePerNight),
-          isAvailable(room.isAvailable), customerName(room.customerName) {}
+          isAvailable(room.isAvailable), guestName(room.guestName) {}
 
 int Room::getRoomNumber() const {
     return roomNumber;
 }
 
-std::string Room::getRoomType() const {
+string Room::getRoomType() const {
     return roomType;
 }
 
@@ -26,39 +29,46 @@ bool Room::getIsAvailable() const {
     return isAvailable;
 }
 
-std::string Room::getCustomerName() const {
-    return customerName;
+void Room::setAvailable(bool available) {
+    this->isAvailable = available;
 }
 
-std::string Room::getCheckInDate() const {
+string Room::getGuestName() const {
+    return guestName;
+}
+
+void Room::setGuestName(string guestName) {
+    this->guestName = move(guestName);
+}
+
+string Room::getCheckInDate() const {
     return checkInDate;
 }
 
-std::string Room::getCheckOutDate() const {
+string Room::getCheckOutDate() const {
     return checkOutDate;
 }
 
-void Room::bookRoom(const std::string &name, const std::string &from, const std::string &to) {
-    this->customerName = name;
+void Room::bookRoom(const string &name, const string &from) {
+    this->guestName = name;
     this->checkInDate = from;
-    this->checkOutDate = to;
     this->isAvailable = false;
 }
 
-void Room::releaseRoom() {
-    this->customerName = "";
+void Room::releaseRoom(const string &to) {
+    this->guestName = "";
     this->checkInDate = "";
-    this->checkOutDate = "";
+    this->checkOutDate = to;
     this->isAvailable = true;
 }
 
-std::string Room::displayRoom() {
-    return "Room Number: " + std::to_string(roomNumber) + ", Room Type: " + roomType
-           + ", Price Per Night: " + std::to_string(pricePerNight) + ", Availability: "
-           + (isAvailable ? "Available" : "Booked") + ", Customer Name: " + customerName;
+string Room::displayRoom() {
+    return "Room Number: " + to_string(roomNumber) + ", Room Type: " + roomType
+           + ", Price Per Night: " + to_string(pricePerNight) + ", Availability: "
+           + (isAvailable ? "Available" : "Booked") + ", Guest Name: " + guestName;
 }
 
-std::string Room::serialize() const {
-    return std::to_string(roomNumber) + "," + roomType + "," + std::to_string(pricePerNight) + "," +
-           (isAvailable ? "1" : "0") + "," + customerName;
+string Room::serialize() const {
+    return to_string(roomNumber) + "," + roomType + "," + to_string(pricePerNight) + "," +
+           (isAvailable ? "true" : "false") + "," + guestName;
 }

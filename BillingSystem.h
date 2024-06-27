@@ -5,25 +5,37 @@
 #include <vector>
 #include "Room.h"
 
-class BillingSystem {
+using namespace std;
+
+class Bill {
 private:
-    struct Bill {
-        std::string guestName;
-        int roomNumber;
-        int daysStayed;
-        double amount;
-    };
-
-    std::vector<Bill> bills;
-
-    static double calculateAmount(int roomNumber, int daysStayed);
-
+    string guestName;
+    int roomNumber;
+    int daysStayed;
+    double amount;
 public:
-    void generateBill(const std::string &guestName, int roomNumber, int daysStayed);
+    Bill(string guestName, int roomNumber, int daysStayed, double amount);
+
+    string getGuestName() const;
+
+    int getRoomNumber() const;
+
+    int getDaysStayed() const;
+
+    double getAmount() const;
+};
+
+class BillingSystem {
+public:
+    vector<Bill> bills;
+
+    static double calculateAmount(const Room& room, int daysStayed);
+
+    void generateBill(const Room& room, int daysStayed);
 
     void displayBills() const;
 
-    std::string serialize() const;
+    string serialize() const;
 };
 
 #endif // HOTEL_MANAGEMENT_SYSTEM_BILLINGSYSTEM_H

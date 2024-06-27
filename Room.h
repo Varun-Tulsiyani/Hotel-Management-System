@@ -4,42 +4,50 @@
 #include <string>
 #include <iostream>
 
+using namespace std;
+
 class Room {
 private:
     int roomNumber;
-    std::string roomType;
+    string roomType;
     double pricePerNight;
     bool isAvailable;
-    std::string customerName;
-    std::string checkInDate;
-    std::string checkOutDate;
+    string guestName;
+    string checkInDate;
+    string checkOutDate;
 
 public:
-    Room(int number, std::string type, double price, bool available, std::string occupant);
+    Room();
+
+    Room(int number, string type, double price, bool available, string guest);
 
     Room(const Room &room);
 
     int getRoomNumber() const;
 
-    std::string getRoomType() const;
+    string getRoomType() const;
 
     double getPricePerNight() const;
 
     bool getIsAvailable() const;
 
-    std::string getCustomerName() const;
+    void setAvailable(bool available);
 
-    std::string getCheckInDate() const;
+    string getGuestName() const;
 
-    std::string getCheckOutDate() const;
+    void setGuestName(string guestName);
 
-    void bookRoom(const std::string &name, const std::string &from, const std::string &to);
+    string getCheckInDate() const;
 
-    void releaseRoom();
+    string getCheckOutDate() const;
 
-    std::string displayRoom();
+    void bookRoom(const string &name, const string &from);
 
-    std::string serialize() const ;
+    void releaseRoom(const string &to);
+
+    string displayRoom();
+
+    string serialize() const;
 };
 
 #endif // HOTEL_MANAGEMENT_SYSTEM_ROOM_H

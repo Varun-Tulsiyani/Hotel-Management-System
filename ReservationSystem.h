@@ -3,6 +3,11 @@
 #include "BillingSystem.h"
 
 class ReservationSystem {
+private:
+    static vector<Room> bookedRoomsList;
+    static vector<Room> availableRoomsList;
+    static vector<Room> rooms;
+    vector<Bill> bills;
 public:
     ReservationSystem();
 
@@ -10,23 +15,30 @@ public:
 
     static void displayHotelDescription();
 
-    static void checkIn(
-            Room &room, const std::string &name,
-            const std::string &checkInDate, const std::string &checkOutDate
-    );
+    static void checkIn(Room &room, const string &name, const string &checkInDate);
 
-    static void checkOut(Room &room);
+    static void checkOut(Room &room, const string &checkOutDate);
 
-    static void cancelReservation();
+    static void cancelReservation(const string &date);
 
-    static std::pair<std::vector<Room>, std::vector<Room>> getRooms();
+    static pair<vector<Room>, vector<Room>> getRooms();
 
     static void viewBillingSystem();
 
-    void displayBookings();
+    static void displayBookings();
 
     static void saveCurrentStatus(
             const BillingSystem &billingSystem,
-            const std::string &filename
+            const string &filename
     );
+
+    static void updateRoomsFile();
+
+    static void readDatabase();
+
+    void writeDatabase();
+
+    void updateRoomStatus(int roomNumber, bool isAvailable, const string &guestName = "");
+
+    void addBill(const Bill &bill);
 };

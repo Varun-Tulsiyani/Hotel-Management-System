@@ -5,24 +5,26 @@
 #include "Room.h"
 #include "ReservationSystem.h"
 
+using namespace std;
+
 void displayMenu() {
-    std::cout << "1. Check-in Customer" << std::endl;
-    std::cout << "2. Check-out Customer" << std::endl;
-    std::cout << "3. Cancel Reservation" << std::endl;
-    std::cout << "4. View Available Rooms" << std::endl;
-    std::cout << "5. View Booked Rooms with information" << std::endl;
-    std::cout << "6. View Billing System" << std::endl;
-    std::cout << "7. Exit" << std::endl;
+    cout << "1. Check-in Guest" << endl;
+    cout << "2. Check-out Guest" << endl;
+    cout << "3. Cancel Reservation" << endl;
+    cout << "4. View Available Rooms" << endl;
+    cout << "5. View Booked Rooms with information" << endl;
+    cout << "6. View Billing System" << endl;
+    cout << "7. Exit" << endl;
 }
 
-std::string getCurrentDate() {
-    std::time_t t = std::time(nullptr);
-    std::tm* now = std::localtime(&t);
+string getCurrentDate() {
+    time_t t = time(nullptr);
+    tm *now = localtime(&t);
 
-    std::ostringstream dateStream;
+    ostringstream dateStream;
     dateStream << (now->tm_year + 1900) << '-'
-               << std::setw(2) << std::setfill('0') << (now->tm_mon + 1) << '-'
-               << std::setw(2) << std::setfill('0') << now->tm_mday;
+               << setw(2) << setfill('0') << (now->tm_mon + 1) << '-'
+               << setw(2) << setfill('0') << now->tm_mday;
 
     return dateStream.str();
 }
@@ -34,25 +36,24 @@ int main() {
 
     auto [bookedRoomsList, availableRoomsList] = ReservationSystem::getRooms();
     int choice, roomNumber;
-    std::string customerName, checkInDate, checkOutDate;
+    string guestName, date = getCurrentDate();
 
     do {
         displayMenu();
-        std::cout << "Enter your choice: ";
-        std::cin >> choice;
-
-        std::cout << "Room Number: ";
-        std::cin >> roomNumber;
+        cout << "Enter your choice: ";
+        cin >> choice;
 
         switch (choice) {
             case 1: {
-                std::cout << "Enter customer name: ";
-                std::cin >> customerName;
-                checkInDate = getCurrentDate();
+                cout << "Room Number: ";
+                cin >> roomNumber;
+
+                cout << "Enter guest name: ";
+                cin >> guestName;
 
                 for (auto room = availableRoomsList.begin(); room != availableRoomsList.end(); ++room) {
                     if (room->getRoomNumber() == roomNumber) {
-                        ReservationSystem::checkIn(*room, customerName, checkInDate, checkOutDate);
+                        ReservationSystem::checkIn(*room, guestName, date);
                         bookedRoomsList.push_back(*room);
                         availableRoomsList.erase(room);
 
@@ -62,10 +63,12 @@ int main() {
             }
                 break;
             case 2: {
-                checkOutDate = getCurrentDate();
+                cout << "Room Number: ";
+                cin >> roomNumber;
+
                 for (auto room = bookedRoomsList.begin(); room != bookedRoomsList.end(); ++room) {
                     if (room->getRoomNumber() == roomNumber) {
-                        ReservationSystem::checkOut(*room);
+                        ReservationSystem::checkOut(*room, date);
                         availableRoomsList.push_back(*room);
                         bookedRoomsList.erase(room);
 
@@ -75,26 +78,26 @@ int main() {
             }
                 break;
             case 3:
-                ReservationSystem::cancelReservation();
+                ReservationSystem::cancelReservation(date);
                 break;
             case 4:
                 for (Room availableRoom: availableRoomsList) {
-                    std::cout << availableRoom.displayRoom() << std::endl;
+                    cout << availableRoom.displayRoom() << endl;
                 }
                 break;
             case 5:
                 for (Room bookedRoom: bookedRoomsList) {
-                    std::cout << bookedRoom.displayRoom() << std::endl;
+                    cout << bookedRoom.displayRoom() << endl;
                 }
                 break;
             case 6:
                 ReservationSystem::viewBillingSystem();
                 break;
             case 7:
-                std::cout << "Exiting..." << std::endl;
+                cout << "Exiting..." << endl;
                 break;
             default:
-                std::cout << "Invalid choice. Please try again." << std::endl;
+                cout << "Invalid choice. Please try again." << endl;
                 break;
         }
 
